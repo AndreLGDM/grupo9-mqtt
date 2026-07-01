@@ -1,0 +1,16 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: broker-grupo9
+    ports:
+      - "1883:1883"   # MQTT sem criptografia (padrão)
+      - "9001:9001"   # MQTT sobre WebSocket (opcional, para dashboards web)
+    volumes:
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+    restart: unless-stopped
+
+volumes:
+  mosquitto-data:
+  mosquitto-log:
