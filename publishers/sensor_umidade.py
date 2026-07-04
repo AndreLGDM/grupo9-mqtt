@@ -1,9 +1,10 @@
 """
-Sensor de temperatura simulado (PUBLISHER).
+Sensor de umidade simulado (PUBLISHER).
 Responsável: Gabriel
 
-Publica leituras em JSON no tópico 'sensores/sala1/temperatura' a cada 2s.
-O sensor NÃO sabe quem vai receber os dados: ele apenas entrega ao broker.
+Publica leituras em JSON no tópico 'sensores/sala1/umidade' a cada 3s.
+Junto com o sensor de temperatura, demonstra que vários publishers podem
+usar o MESMO broker com tópicos diferentes.
 """
 
 import json
@@ -14,18 +15,18 @@ import paho.mqtt.client as mqtt
 
 BROKER = "localhost"
 PORTA = 1883
-TOPICO = "sensores/sala1/temperatura"
-INTERVALO_S = 2
+TOPICO = "sensores/sala1/umidade"
+INTERVALO_S = 3
 
 
 def ao_conectar(client, userdata, flags, reason_code, properties):
-    print(f"[sensor-temp] Conectado ao broker {BROKER}:{PORTA} (rc={reason_code})")
+    print(f"[sensor-umid] Conectado ao broker {BROKER}:{PORTA} (rc={reason_code})")
 
 
 def main():
     client = mqtt.Client(
         mqtt.CallbackAPIVersion.VERSION2,
-        client_id="sensor-temperatura-sala1",
+        client_id="sensor-umidade-sala1",
     )
     client.on_connect = ao_conectar
     client.connect(BROKER, PORTA, keepalive=60)
@@ -34,19 +35,18 @@ def main():
     try:
         while True:
             leitura = {
-                "sensor": "temp-sala1",
-                "valor": round(random.uniform(18.0, 34.0), 1),
-                "unidade": "C",
+                "sensor": "umid-sala1",
+                "valor": round(random.uniform(40.0, 90.0), 1),
+                "unidade": "%",
                 "timestamp": time.strftime("%H:%M:%S"),
             }
             payload = json.dumps(leitura)
-            # QoS 1 = o broker confirma o recebimento (PUBACK)
             info = client.publish(TOPICO, payload, qos=1)
             info.wait_for_publish()
-            print(f"[sensor-temp] Publicado em '{TOPICO}': {payload}")
+            print(f"[sensor-umid] Publicado em '{TOPICO}': {payload}")
             time.sleep(INTERVALO_S)
     except KeyboardInterrupt:
-        print("\n[sensor-temp] Encerrando...")
+        print("\n[sensor-umid] Encerrando...")
     finally:
         client.loop_stop()
         client.disconnect()
